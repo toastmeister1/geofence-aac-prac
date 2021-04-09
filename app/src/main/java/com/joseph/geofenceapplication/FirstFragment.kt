@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.gms.common.api.Status
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.model.TypeFilter
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.joseph.geofenceapplication.databinding.FragmentFirstBinding
@@ -40,6 +41,8 @@ class FirstFragment : Fragment() {
 
         // Specify the types of place data to return.
         autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME))
+        autocompleteFragment.setTypeFilter(TypeFilter.CITIES)
+        autocompleteFragment.setCountries("KR")
 
         // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
