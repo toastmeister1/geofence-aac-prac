@@ -15,6 +15,8 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.PlaceLikelihood
 import com.google.android.libraries.places.api.model.TypeFilter
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
+import com.google.android.libraries.places.api.net.FetchPlaceResponse
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
@@ -70,7 +72,7 @@ class FirstFragment : Fragment() {
 
     private fun getCurrentLocations() {
         // Use fields to define the data types to return.
-        val placeFields: List<Place.Field> = listOf(Place.Field.NAME)
+        val placeFields: List<Place.Field> = listOf(Place.Field.NAME, Place.Field.ID)
 
         // Use the builder to create a FindCurrentPlaceRequest.
         val request: FindCurrentPlaceRequest = FindCurrentPlaceRequest.newInstance(placeFields)
@@ -83,6 +85,7 @@ class FirstFragment : Fragment() {
             placeResponse.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val response = task.result
+                    getDetailsWithPlaceId(response.placeLikelihoods[0].place.id.toString())
                     for (placeLikelihood: PlaceLikelihood in response?.placeLikelihoods
                             ?: emptyList()) {
                         Log.i(
@@ -98,8 +101,31 @@ class FirstFragment : Fragment() {
                 }
             }
         } else {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),1)
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
         }
+
+    }
+
+    private fun getDetailsWithPlaceId(placeId: String) {
+        // Specify the fields to return.
+        val placeFields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.BUSINESS_STATUS, Place.Field.OPENING_HOURS)
+
+        // Construct a request object, passing the place ID and fields array.
+        val request = FetchPlaceRequest.newInstance(placeId, placeFields)
+
+        placesClient.fetchPlace(request)
+                .addOnSuccessListener { response: FetchPlaceResponse ->
+                    val place = response.place
+                    Log.i("TAG", "Place found: ${place.name}, " +
+                            "Address: ${place.address}, " +
+                            "Business Status: ${place.businessStatus}, " +
+                            "Opening Hours: ${place.openingHours}")
+                }.addOnFailureListener { exception: Exception ->
+                    if (exception is ApiException) {
+                        Log.e("TAG", "Place not found: ${exception.message}")
+                        val statusCode = exception.statusCode
+                    }
+                }
 
     }
 
